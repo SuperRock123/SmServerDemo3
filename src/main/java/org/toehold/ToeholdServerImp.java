@@ -43,7 +43,7 @@ public class ToeholdServerImp implements DataService {
 
     @Override
     public void handle_all_data(SensorData sensorData) {
-        savePicture(sensorData.getSn(), sensorData.getPicData());
+//        savePicture(sensorData.getSn(), sensorData.getPicData());
 
         try {
             String json = mapper.writeValueAsString(sensorData);
