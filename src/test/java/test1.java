@@ -1,9 +1,9 @@
 import cn.zmvision.ccm.smserver.service.DataService;
 import org.junit.jupiter.api.Test;
-import org.toehold.toeholdServerImp;
+import org.toehold.ToeholdServerImp;
 
 public class test1 {
-    DataService service=new toeholdServerImp() ;
+    DataService service=new ToeholdServerImp() ;
 
     @Test
     public void test1() {
