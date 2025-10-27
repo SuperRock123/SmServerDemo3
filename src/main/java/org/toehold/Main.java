@@ -9,6 +9,7 @@ import org.toehold.utils.RedisUtil;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -59,6 +60,7 @@ public class Main {
             for (int i = 0; i < 5; i++) {
                 SensorData sensorData = createTestSensorData(i);
                 String json = mapper.writeValueAsString(sensorData);
+                Log.debug("已创建测试数据: " + json);
                 RedisUtil.pushQueue("sensor_queue", json);
                 Log.debug("已插入测试数据到Redis队列: " + sensorData.getSn());
 
@@ -95,18 +97,24 @@ public class Main {
         sensorData.setReserve("Test data " + index);
         sensorData.setU2p(1000 + index * 100);
         sensorData.setResWidth(new Integer[]{100 + index * 10, 200 + index * 10, 300 + index * 10});
-        sensorData.setUptime(LocalDateTime.now());
+        sensorData.setUptime(java.time.LocalDateTime.now());
         sensorData.setPicSize(1024 + index * 512);
 
         // 为部分数据添加图片数据
         if (index % 2 == 0) {
-            byte[] picData = createTestImageData(512 + index * 256);
-            sensorData.setPicData(picData);
+            String picDataBase64 = readTestImageBase64();
+            if (picDataBase64 != null && !picDataBase64.isEmpty()) {
+                byte[] picData = java.util.Base64.getDecoder().decode(picDataBase64);
+                sensorData.setPicData(picData);
+                sensorData.setPicSize(picData.length);
+            } else {
+                sensorData.setPicData(null);
+            }
         } else {
             sensorData.setPicData(null);
         }
 
-        ArrayList<String> resList = new ArrayList<>();
+        java.util.ArrayList<String> resList = new java.util.ArrayList<>();
         resList.add("res_item_1_" + index);
         resList.add("res_item_2_" + index);
         sensorData.setResList(resList);
@@ -114,11 +122,26 @@ public class Main {
         return sensorData;
     }
 
-    private static byte[] createTestImageData(int size) {
-        byte[] imageData = new byte[size];
-        for (int i = 0; i < size; i++) {
-            imageData[i] = (byte) (i % 256);
+    // 从文件读取并缓存测试图片的 Base64 文本
+    private static volatile String TEST_IMAGE_BASE64_CACHE;
+    private static String readTestImageBase64() {
+        if (TEST_IMAGE_BASE64_CACHE != null) return TEST_IMAGE_BASE64_CACHE;
+        try {
+            java.nio.file.Path p = java.nio.file.Paths.get("D:\\java\\SmServerDemo3\\logs\\base64.txt");
+            if (!java.nio.file.Files.exists(p)) {
+                p = java.nio.file.Paths.get("logs", "base64.txt");
+            }
+            String content = new String(java.nio.file.Files.readAllBytes(p), java.nio.charset.StandardCharsets.UTF_8).trim();
+            // 移除 dataURI 前缀（如果存在）
+            int comma = content.indexOf(',');
+            if (comma >= 0) content = content.substring(comma + 1);
+            // 去除所有空白符（换行/空格等），确保标准 Base64
+            content = content.replaceAll("\\s+", "");
+            TEST_IMAGE_BASE64_CACHE = content;
+            return content;
+        } catch (Exception e) {
+            org.toehold.utils.Log.error("读取测试图片 base64 失败", e);
+            return "";
         }
-        return imageData;
     }
 }

@@ -47,6 +47,7 @@ public class ToeholdServerImp implements DataService {
 
         try {
             String json = mapper.writeValueAsString(sensorData);
+            Log.debug("ALL_DATA queued to Redis: " + json);
             RedisUtil.pushQueue("sensor_queue", json);
             Log.debug("ALL_DATA queued to Redis: " + json);
         } catch (Exception e) {
