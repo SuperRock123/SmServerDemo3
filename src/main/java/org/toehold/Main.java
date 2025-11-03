@@ -23,23 +23,27 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Log.debug("Server starting...");
+       try {
+           Log.debug("Server starting...");
 
-        ToeholdServerImp service = new ToeholdServerImp();
-        SmServer smServer = new SmServer(service, AppConfig.tcp().port);
+           ToeholdServerImp service = new ToeholdServerImp();
+           SmServer smServer = new SmServer(service, AppConfig.tcp().port);
 
-        // 启动Redis队列消费者
-        new Thread(new RedisQueueConsumer(), "RedisQueueConsumer").start();
+           // 启动Redis队列消费者
+           new Thread(new RedisQueueConsumer(), "RedisQueueConsumer").start();
 
-        // 延迟插入测试数据（可通过配置开关）
-        if (AppConfig.testData() != null && AppConfig.testData().enabled) {
-            scheduleTestDataInsertion();
+           // 延迟插入测试数据（可通过配置开关）
+           if (AppConfig.testData() != null && AppConfig.testData().enabled) {
+               scheduleTestDataInsertion();
+           }
+           // 启动服务
+           smServer.start();
+
+
+           Log.debug("Server started on port 9911");
+        } catch (Exception e) {
+            Log.error("启动失败", e);
         }
-        // 启动服务
-        smServer.start();
-
-
-        Log.debug("Server started on port 9911");
     }
 
     private static void scheduleTestDataInsertion() {
