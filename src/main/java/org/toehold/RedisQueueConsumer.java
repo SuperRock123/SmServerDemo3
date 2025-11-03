@@ -43,11 +43,12 @@ public class RedisQueueConsumer implements Runnable {
             imageAddRandomSuffix = AppConfig.mqtt().image.addRandomSuffix;
 
             // Raw client password: MD5(uppercase clientID)
-            String plain = clientID.toUpperCase();
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] digest = md.digest(plain.getBytes("UTF-8"));
-            String uPwd = bytesToHex(digest).toUpperCase();
+//            String plain = clientID.toUpperCase();
+//            MessageDigest md = MessageDigest.getInstance("MD5");
+//            byte[] digest = md.digest(plain.getBytes("UTF-8"));
+//            String uPwd = bytesToHex(digest).toUpperCase();
 
+            String uPwd = AppConfig.mqtt().password;
             mqttClient = new MqttClient(broker, clientID, new MemoryPersistence());
             MqttConnectOptions opts = new MqttConnectOptions();
             opts.setUserName(uName);
@@ -170,10 +171,11 @@ public class RedisQueueConsumer implements Runnable {
         try {
             if (globalImageClient == null || !globalImageClient.isConnected()) {
 //                String finalClientId = clientID + (addRandomSuffix ? ("_" + new Random().nextInt(1000)) : "");
-                MessageDigest md = MessageDigest.getInstance("MD5");
-                byte[] digest = md.digest(clientID.getBytes("UTF-8"));
-                String imageUPD = bytesToHex(digest).toUpperCase();
+//                MessageDigest md = MessageDigest.getInstance("MD5");
+//                byte[] digest = md.digest(clientID.getBytes("UTF-8"));
+//                String imageUPD = bytesToHex(digest).toUpperCase();
 
+                String imageUPD = AppConfig.mqtt().image.password;
                 globalImageClient = new MqttClient(broker, clientID, new MemoryPersistence());
                 MqttConnectOptions opts = new MqttConnectOptions();
                 opts.setUserName(uName);

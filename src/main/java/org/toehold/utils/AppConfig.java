@@ -13,6 +13,7 @@ public class AppConfig {
     public static class MqttConfig {
         public String broker = "tcp://localhost:1883";
         public String clientID = "WR0F202509180001";
+        public String password;
         public String userName = "TOE";
         public TopicConfig topic = new TopicConfig();
         public ImageConfig image = new ImageConfig();
@@ -26,6 +27,7 @@ public class AppConfig {
         public static class ImageConfig {
             public String broker = "tcp://localhost:1883";
             public String clientID = "WR0F202509180002-image";
+            public String password;
             public String userName = "TOE";
             public boolean addRandomSuffix = true;
         }

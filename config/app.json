@@ -10,7 +10,8 @@
   },
   "mqtt": {
     "broker": "tcp://localhost:1883",
-    "clientID": "WR0F202509180001",
+    "clientID": "IOTCLOUD_ADMIN_abc",
+    "password": "toehold_2023",
     "userName": "TOE",
     "topic": {
       "rawPrefix": "$data/",
@@ -25,6 +26,7 @@
     },
     "image": {
       "broker": "tcp://localhost:1883",
+      "password": "toehold_2023",
       "clientID": "WR0F202509180002-image",
       "userName": "TOE",
       "addRandomSuffix": true

@@ -9,7 +9,7 @@
   },
   "mqtt": {
     "broker": "tcp://localhost:1883",
-    "clientID": "WR0F202509180001",
+    "clientID": "IOTCLOUD_ADMIN_abc",
     "userName": "TOE",
     "topic": {
       "rawPrefix": "$data/",
