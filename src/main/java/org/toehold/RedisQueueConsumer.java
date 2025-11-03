@@ -119,8 +119,8 @@ public class RedisQueueConsumer implements Runnable {
                 imageMessage.setQos(0);
                 ensureGlobalImageClient(imageBroker, imageUName, imageClientID, imageAddRandomSuffix);
                 String imageTopic = (AppConfig.mqtt().topic != null)
-                        ? AppConfig.mqtt().topic.imagePrefix + longAddr1 + AppConfig.mqtt().topic.imageSuffix
-                        : ("$data/" + longAddr1 + "/image");
+                        ? AppConfig.mqtt().topic.imagePrefix + clientID + AppConfig.mqtt().topic.imageSuffix
+                        : ("$data/" + clientID + "/image");
                 globalImageClient.publish(imageTopic, imageMessage);
                 Log.debug("Published image to [" + imageTopic + "] bytes=" + imagePayload.length);
             }
@@ -169,12 +169,12 @@ public class RedisQueueConsumer implements Runnable {
     private static synchronized void ensureGlobalImageClient(String broker, String uName, String clientID, boolean addRandomSuffix) {
         try {
             if (globalImageClient == null || !globalImageClient.isConnected()) {
-                String finalClientId = clientID + (addRandomSuffix ? ("_" + new Random().nextInt(1000)) : "");
+//                String finalClientId = clientID + (addRandomSuffix ? ("_" + new Random().nextInt(1000)) : "");
                 MessageDigest md = MessageDigest.getInstance("MD5");
-                byte[] digest = md.digest(finalClientId.getBytes("UTF-8"));
+                byte[] digest = md.digest(clientID.getBytes("UTF-8"));
                 String imageUPD = bytesToHex(digest).toUpperCase();
 
-                globalImageClient = new MqttClient(broker, finalClientId, new MemoryPersistence());
+                globalImageClient = new MqttClient(broker, clientID, new MemoryPersistence());
                 MqttConnectOptions opts = new MqttConnectOptions();
                 opts.setUserName(uName);
                 opts.setPassword(imageUPD.toCharArray());
