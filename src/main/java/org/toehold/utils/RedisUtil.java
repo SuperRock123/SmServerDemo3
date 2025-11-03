@@ -7,7 +7,7 @@ import redis.clients.jedis.JedisPool;
  * Redis工具类，提供发布订阅和队列操作功能
  */
 public class RedisUtil {
-    private static JedisPool pool = new JedisPool("localhost", 6379);
+    private static JedisPool pool = new JedisPool(AppConfig.redis().host, AppConfig.redis().port);
 
     /**
      * 向指定频道发布消息

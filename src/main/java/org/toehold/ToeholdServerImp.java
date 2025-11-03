@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.toehold.utils.Log;
 import org.toehold.utils.RedisUtil;
+import org.toehold.utils.AppConfig;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -15,7 +16,6 @@ import java.time.format.DateTimeFormatter;
 public class ToeholdServerImp implements DataService {
     private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
     private static final ObjectMapper mapper = new ObjectMapper();
-    // 静态初始化块，配置 ObjectMapper 支持 Java 8 时间类型
     static {
         mapper.registerModule(new JavaTimeModule());
     }
@@ -34,7 +34,7 @@ public class ToeholdServerImp implements DataService {
     public void handle_res_data(SensorData sensorData) {
         try {
             String json = mapper.writeValueAsString(sensorData);
-            RedisUtil.pushQueue("sensor_queue", json);
+            RedisUtil.pushQueue(AppConfig.redis().queue, json);
             Log.debug("RES_DATA queued to Redis: " + json);
         } catch (Exception e) {
             Log.error("handle_res_data failed", e);
@@ -48,7 +48,7 @@ public class ToeholdServerImp implements DataService {
         try {
             String json = mapper.writeValueAsString(sensorData);
             Log.debug("ALL_DATA queued to Redis: " + json);
-            RedisUtil.pushQueue("sensor_queue", json);
+            RedisUtil.pushQueue(AppConfig.redis().queue, json);
             Log.debug("ALL_DATA queued to Redis: " + json);
         } catch (Exception e) {
             Log.error("handle_all_data failed", e);

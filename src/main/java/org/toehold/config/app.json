@@ -1,0 +1,36 @@
+{
+  "tcp": {
+    "port": 9911
+  },
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "queue": "sensor_queue"
+  },
+  "mqtt": {
+    "broker": "tcp://localhost:1883",
+    "clientID": "WR0F202509180001",
+    "userName": "TOE",
+    "topic": {
+      "rawPrefix": "$data/",
+      "rawSuffix": "/raw",
+      "imagePrefix": "$data/",
+      "imageSuffix": "/image"
+    },
+    "mapping": {
+      "TEST_SN_1": "DT0E202509150001",
+      "TEST_SN_2": "DT0E202509150002",
+      "TEST_SN_3": "DT0E202509150003"
+    },
+    "image": {
+      "broker": "tcp://localhost:1883",
+      "clientID": "WR0F202509180002-image",
+      "userName": "TOE",
+      "addRandomSuffix": true
+    }
+  },
+  "testData": {
+    "enabled": false,
+    "base64File": "logs/base64.txt"
+  }
+}

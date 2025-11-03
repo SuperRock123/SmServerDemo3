@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.toehold.utils.Log;
 import org.toehold.utils.RedisUtil;
+import org.toehold.utils.AppConfig;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,13 +26,15 @@ public class Main {
         Log.debug("Server starting...");
 
         ToeholdServerImp service = new ToeholdServerImp();
-        SmServer smServer = new SmServer(service, 9911);
+        SmServer smServer = new SmServer(service, AppConfig.tcp().port);
 
         // 启动Redis队列消费者
         new Thread(new RedisQueueConsumer(), "RedisQueueConsumer").start();
 
-        // 延迟插入测试数据
-        scheduleTestDataInsertion();
+        // 延迟插入测试数据（可通过配置开关）
+        if (AppConfig.testData() != null && AppConfig.testData().enabled) {
+            scheduleTestDataInsertion();
+        }
         // 启动服务
         smServer.start();
 
@@ -127,15 +130,20 @@ public class Main {
     private static String readTestImageBase64() {
         if (TEST_IMAGE_BASE64_CACHE != null) return TEST_IMAGE_BASE64_CACHE;
         try {
-            java.nio.file.Path p = java.nio.file.Paths.get("D:\\java\\SmServerDemo3\\logs\\base64.txt");
+            String base64Path = (AppConfig.testData() != null && AppConfig.testData().base64File != null)
+                    ? AppConfig.testData().base64File
+                    : "logs/base64.txt";
+            java.nio.file.Path p = java.nio.file.Paths.get(base64Path);
             if (!java.nio.file.Files.exists(p)) {
-                p = java.nio.file.Paths.get("logs", "base64.txt");
+                // 兼容绝对与相对路径两种情况
+                p = java.nio.file.Paths.get("D:\\java\\SmServerDemo3", base64Path);
+                if (!java.nio.file.Files.exists(p)) {
+                    p = java.nio.file.Paths.get("logs", "base64.txt");
+                }
             }
             String content = new String(java.nio.file.Files.readAllBytes(p), java.nio.charset.StandardCharsets.UTF_8).trim();
-            // 移除 dataURI 前缀（如果存在）
             int comma = content.indexOf(',');
             if (comma >= 0) content = content.substring(comma + 1);
-            // 去除所有空白符（换行/空格等），确保标准 Base64
             content = content.replaceAll("\\s+", "");
             TEST_IMAGE_BASE64_CACHE = content;
             return content;
