@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class AppConfig {
     public static class TcpConfig { public int port = 9911; }
-    public static class RedisConfig { public String host = "localhost"; public int port = 6379; public String queue = "sensor_queue"; }
+    public static class RedisConfig { public String host = "localhost"; public int port = 6379; public String queue = "sensor_queue"; public String password; }
     public static class MqttConfig {
         public String broker = "tcp://localhost:1883";
         public String clientID = "WR0F202509180001";

@@ -1,28 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sms-server-demo
+  name: image-crack-service
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sms-server-demo
+      app: image-crack-service
   template:
     metadata:
       labels:
-        app: sms-server-demo
+        app: image-crack-service
     spec:
       containers:
-      - name: sms-server-demo
-        image: sms-server-demo:latest
+      - name: image-crack-service
+        image: docker.io/library/datapush:private.guizhoutongren-v1.0.1-7ad909
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9911
         volumeMounts:
         - name: config-volume
-          mountPath: /app/config/app.json
-          subPath: app.json
+          mountPath: /app/config
+        - name: logs-volume
+          mountPath: /app/logs
         resources:
           limits:
             cpu: "1"
@@ -37,52 +38,23 @@ spec:
           periodSeconds: 10
       volumes:
       - name: config-volume
-        configMap:
-          name: sms-server-config
+        hostPath:
+          path: /mnt/k3s/crackGauge/config
+          type: DirectoryOrCreate
+      - name: logs-volume
+        hostPath:
+          path: /mnt/k3s/crackGauge/logs
+          type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: sms-server-demo
+  name: image-crack-service
   namespace: default
 spec:
   selector:
-    app: sms-server-demo
+    app: image-crack-service
   ports:
   - port: 9911
     targetPort: 9911
   type: ClusterIP
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: sms-server-config
-  namespace: default
-data:
-  app.json: |
-    {
-      "tcp": {
-        "port": 9911
-      },
-      "redis": {
-        "host": "redis",
-        "port": 6379,
-        "queue": "sensor_queue"
-      },
-      "mqtt": {
-        "broker": "tcp://mqtt-broker:1883",
-        "clientId": "sensor-server",
-        "username": "admin",
-        "password": "password",
-        "topicPrefix": "$data",
-        "imageClientSuffix": "_IMG"
-      },
-      "deviceMapping": {
-        "sn1": "0011223344556677",
-        "sn2": "8899AABBCCDDEEFF"
-      },
-      "testData": {
-        "enabled": false,
-        "base64File": "/app/config/base64.txt"
-      }
-    }

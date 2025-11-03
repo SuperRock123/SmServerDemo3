@@ -2,12 +2,13 @@ package org.toehold.utils;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 /**
  * Redis工具类，提供发布订阅和队列操作功能
  */
 public class RedisUtil {
-    private static JedisPool pool = new JedisPool(AppConfig.redis().host, AppConfig.redis().port);
+    private static JedisPool pool = new JedisPool(new JedisPoolConfig(), AppConfig.redis().host, AppConfig.redis().port, 2000, AppConfig.redis().password);
 
     /**
      * 向指定频道发布消息

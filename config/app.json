@@ -5,10 +5,11 @@
   "redis": {
     "host": "localhost",
     "port": 6379,
-    "queue": "sensor_queue"
+    "queue": "sensor_queue",
+    "password": "toehold_2023"
   },
   "mqtt": {
-    "broker": "tcp://192.168.1.241:1883",
+    "broker": "tcp://localhost:1883",
     "clientID": "WR0F202509180001",
     "userName": "TOE",
     "topic": {
@@ -23,14 +24,14 @@
       "TEST_SN_3": "DT0E202509150003"
     },
     "image": {
-      "broker": "tcp://192.168.1.241:1883",
+      "broker": "tcp://localhost:1883",
       "clientID": "WR0F202509180002-image",
       "userName": "TOE",
       "addRandomSuffix": true
     }
   },
   "testData": {
-    "enabled": false,
+    "enabled": true,
     "base64File": "logs/base64.txt"
   }
 }
