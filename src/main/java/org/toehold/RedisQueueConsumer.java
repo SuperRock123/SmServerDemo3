@@ -28,7 +28,7 @@ public class RedisQueueConsumer implements Runnable {
     private String imageClientID;
     private String imageUName;
     private boolean imageAddRandomSuffix;
-
+    private static  String RTU="WR0F202509180001";
     public RedisQueueConsumer() {
         try {
             mapper.registerModule(new JavaTimeModule());
@@ -106,8 +106,8 @@ public class RedisQueueConsumer implements Runnable {
             dataMap.put("data", longAddressMap);
             String rawPayload = mapper.writeValueAsString(dataMap);
             String rawTopic = (AppConfig.mqtt().topic != null)
-                    ? AppConfig.mqtt().topic.rawPrefix + clientID + AppConfig.mqtt().topic.rawSuffix
-                    : ("$data/" + clientID + "/raw");
+                    ? AppConfig.mqtt().topic.rawPrefix + RTU + AppConfig.mqtt().topic.rawSuffix
+                    : ("$data/" + RTU + "/raw");
             MqttMessage rawMessage = new MqttMessage(rawPayload.getBytes());
             rawMessage.setQos(0);
             mqttClient.publish(rawTopic, rawMessage);
@@ -119,8 +119,8 @@ public class RedisQueueConsumer implements Runnable {
                 imageMessage.setQos(0);
                 ensureGlobalImageClient(imageBroker, imageUName, imageClientID, imageAddRandomSuffix);
                 String imageTopic = (AppConfig.mqtt().topic != null)
-                        ? AppConfig.mqtt().topic.imagePrefix + clientID + AppConfig.mqtt().topic.imageSuffix
-                        : ("$data/" + clientID + "/image");
+                        ? AppConfig.mqtt().topic.imagePrefix + RTU + AppConfig.mqtt().topic.imageSuffix
+                        : ("$data/" + RTU + "/image");
                 globalImageClient.publish(imageTopic, imageMessage);
                 Log.debug("Published image to [" + imageTopic + "] bytes=" + imagePayload.length);
             }
