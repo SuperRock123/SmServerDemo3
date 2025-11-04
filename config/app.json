@@ -13,6 +13,7 @@
     "clientID": "IOTCLOUD_ADMIN_abc",
     "password": "toehold_2023",
     "userName": "TOE",
+    "RTU": "WR01202509150001",
     "topic": {
       "rawPrefix": "$data/",
       "rawSuffix": "/raw",

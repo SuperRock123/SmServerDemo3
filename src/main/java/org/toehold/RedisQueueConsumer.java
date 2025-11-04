@@ -28,7 +28,7 @@ public class RedisQueueConsumer implements Runnable {
     private String imageClientID;
     private String imageUName;
     private boolean imageAddRandomSuffix;
-    private static  String RTU="WR0F202509180001";
+    private  String RTU="WR01202509150001";
     public RedisQueueConsumer() {
         try {
             mapper.registerModule(new JavaTimeModule());
@@ -41,7 +41,7 @@ public class RedisQueueConsumer implements Runnable {
             imageClientID = AppConfig.mqtt().image.clientID;
             imageUName = AppConfig.mqtt().image.userName;
             imageAddRandomSuffix = AppConfig.mqtt().image.addRandomSuffix;
-
+            RTU=AppConfig.mqtt().RTU;
             // Raw client password: MD5(uppercase clientID)
 //            String plain = clientID.toUpperCase();
 //            MessageDigest md = MessageDigest.getInstance("MD5");

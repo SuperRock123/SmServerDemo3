@@ -15,6 +15,7 @@ public class AppConfig {
         public String clientID = "WR0F202509180001";
         public String password;
         public String userName = "TOE";
+        public String RTU ;
         public TopicConfig topic = new TopicConfig();
         public ImageConfig image = new ImageConfig();
         public Map<String,String> mapping;
