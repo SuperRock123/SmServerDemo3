@@ -9,6 +9,8 @@ import org.toehold.utils.Log;
 import org.toehold.utils.AppConfig;
 import cn.zmvision.ccm.smserver.entitys.SensorData;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.MessageDigest;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -140,31 +142,44 @@ public class RedisQueueConsumer implements Runnable {
 
     private byte[] buildImagePayload(String longAddr, long timestampMs, byte[] picData) {
         byte[] devBytes = to8ByteDeviceAddr(longAddr);
-        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(8 + 8 + (picData != null ? picData.length : 0));
-        buf.order(java.nio.ByteOrder.BIG_ENDIAN);
+        ByteBuffer buf = ByteBuffer.allocate(8 + 8 + (picData != null ? picData.length : 0));
+        buf.order(ByteOrder.BIG_ENDIAN);
         buf.put(devBytes);
-        buf.putLong(timestampMs);
+        buf.putLong(timestampMs);  // 大端序写入
         if (picData != null) buf.put(picData);
         return buf.array();
     }
 
     private byte[] to8ByteDeviceAddr(String addr) {
         try {
+            // 移除所有非十六进制字符
             String hex = addr.replaceAll("[^0-9A-Fa-f]", "");
-            if (hex.length() >= 16 && hex.matches("[0-9A-Fa-f]+")) {
-                byte[] out = new byte[8];
-                for (int i = 0; i < 8; i++) {
-                    out[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2), 16);
-                }
-                return out;
+
+            // 确保正好16个十六进制字符（8字节）
+            if (hex.length() < 16) {
+                // 左侧补0
+                hex = String.format("%16s", hex).replace(' ', '0');
+            } else if (hex.length() > 16) {
+                // 截断到16字符
+                hex = hex.substring(0, 16);
             }
-        } catch (Exception ignored) {}
-        byte[] src = addr.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        byte[] out = new byte[8];
-        int n = Math.min(src.length, 8);
-        System.arraycopy(src, 0, out, 0, n);
-        for (int i = n; i < 8; i++) out[i] = 0;
-        return out;
+
+            // 验证格式
+            if (hex.matches("[0-9A-Fa-f]{16}")) {
+                int len = hex.length();
+                byte[] data = new byte[len / 2];
+                for (int i = 0; i < len; i += 2) {
+                    data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                            + Character.digit(hex.charAt(i + 1), 16));
+                }
+                return data;
+            }
+        } catch (Exception e) {
+            System.err.println("设备地址转换失败: " + addr + ", 错误: " + e.getMessage());
+        }
+
+        // 失败时返回8字节0
+        return new byte[8];
     }
 
     private static synchronized void ensureGlobalImageClient(String broker, String uName, String clientID, boolean addRandomSuffix) {

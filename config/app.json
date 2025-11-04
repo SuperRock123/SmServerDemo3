@@ -21,9 +21,9 @@
       "imageSuffix": "/image"
     },
     "mapping": {
-      "TEST_SN_1": "DT0E202509150001",
-      "TEST_SN_2": "DT0E202509150002",
-      "TEST_SN_3": "DT0E202509150003"
+      "TEST_SN_1": "DFA1202509150001",
+      "TEST_SN_2": "DFA1202509150002",
+      "TEST_SN_3": "DFA1202509150003"
     },
     "image": {
       "broker": "tcp://localhost:1883",
