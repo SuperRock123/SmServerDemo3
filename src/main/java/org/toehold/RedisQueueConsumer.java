@@ -12,7 +12,10 @@ import cn.zmvision.ccm.smserver.entitys.SensorData;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.MessageDigest;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -82,24 +85,70 @@ public class RedisQueueConsumer implements Runnable {
 
     private void publishMqtt(SensorData data) {
         try {
-            long ts = data.getUptime().atZone(ZoneId.of("UTC")).toInstant().toEpochMilli();
+            long ts;
+            String vals;
+
+            // 检查是否有resList且不为空
+            if (data.getResList() != null && !data.getResList().isEmpty()) {
+                String firstRes = data.getResList().get(0);
+                String[] parts = firstRes.split(",");
+
+                // 从resList的第一个元素中解析时间戳
+                if (parts.length >= 1) {
+                    String timeStr = parts[0];
+                    try {
+                        // 解析时间格式: yyyyMMdd_HHmmssSS
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmssSS");
+                        Date date = sdf.parse(timeStr);
+                        ts = date.getTime(); // 获取毫秒时间戳
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        Log.error("Invalid time format in resList, using current time.",e);
+                        ts = System.currentTimeMillis(); // 解析失败使用当前时间
+                    }
+                } else {
+                    ts = System.currentTimeMillis();
+                }
+
+                // 保存完整的数据值
+                vals = firstRes;
+
+                // 构建值字符串：使用resList中的指定位置元素
+                StringBuilder sb = new StringBuilder();
+                if (parts.length >= 4) {
+                    // 使用resList[1], resList[2], resList[3]作为裂缝宽度值
+                    for (int i = 1; i <= 3; i++) {
+                        if (i > 1) sb.append(",");
+                        double crackVal = Double.parseDouble(parts[i]);
+                        sb.append(String.format("%.4f", crackVal));
+                    }
+                }
+
+                // 添加湿度和温度
+                sb.append(",").append(data.getHumidity() != null ? data.getHumidity() : 0)
+                        .append(",").append(data.getTemperature() != null ? data.getTemperature() : 0);
+                vals = sb.toString();
+            } else {
+                // 如果没有resList，则回退到原始逻辑（但仍然处理uptime为null的情况）
+                ts = System.currentTimeMillis();
+
+                StringBuilder sb = new StringBuilder();
+                Integer[] resWidths = data.getResWidth();
+                if (resWidths != null && resWidths.length >= 3) {
+                    for (int i = 0; i < 3; i++) {
+                        if (i > 0) sb.append(",");
+                        double crackVal = resWidths[i] / 100.0;
+                        sb.append(String.format("%.3f", crackVal));
+                    }
+                }
+                sb.append(",").append(data.getHumidity() != null ? data.getHumidity() : 0)
+                        .append(",").append(data.getTemperature() != null ? data.getTemperature() : 0);
+                vals = sb.toString();
+            }
 
             String longAddr1 = (AppConfig.mqtt().mapping != null)
                     ? AppConfig.mqtt().mapping.getOrDefault(data.getSn(), data.getSn())
                     : data.getSn();
-
-            StringBuilder sb = new StringBuilder();
-            Integer[] resWidths = data.getResWidth();
-            if (resWidths != null && resWidths.length >= 3) {
-                for (int i = 0; i < 3; i++) {
-                    if (i > 0) sb.append(",");
-                    double crackVal = resWidths[i] / 100.0;
-                    sb.append(String.format("%.3f", crackVal));
-                }
-            }
-            sb.append(",").append(data.getHumidity() != null ? data.getHumidity() : 0)
-              .append(",").append(data.getTemperature() != null ? data.getTemperature() : 0);
-            String vals = sb.toString();
 
             Map<String, Object> dataMap = new HashMap<>();
             Map<String, Object> longAddressMap = new HashMap<>();
@@ -116,6 +165,7 @@ public class RedisQueueConsumer implements Runnable {
             mqttClient.publish(rawTopic, rawMessage);
             Log.debug("Published raw data to [" + rawTopic + "]: " + rawPayload);
 
+            // 处理 图片
             if (data.getPicData() != null && data.getPicData().length > 0) {
                 byte[] imagePayload = buildImagePayload(longAddr1, ts, data.getPicData());
                 MqttMessage imageMessage = new MqttMessage(imagePayload);
@@ -131,6 +181,7 @@ public class RedisQueueConsumer implements Runnable {
             Log.error("publishMqtt failed", e);
         }
     }
+
 
     private static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
