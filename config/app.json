@@ -6,7 +6,11 @@
     "host": "localhost",
     "port": 6379,
     "queue": "sensor_queue",
-    "password": "toehold_2023"
+    // "password": "toehold_2023",
+    "password": "",
+    "maxLength": 10000,
+    "blockPopTimeoutSec": 5,
+    "reconnectIntervalSec": 5
   },
   "mqtt": {
     "broker": "tcp://localhost:1883",
@@ -14,6 +18,7 @@
     "password": "toehold_2023",
     "userName": "TOE",
     "RTU": "WR01202509150001",
+    "reconnectIntervalSec": 5,
     "topic": {
       "rawPrefix": "$data/",
       "rawSuffix": "/raw",
@@ -21,7 +26,7 @@
       "imageSuffix": "/image"
     },
     "mapping": {
-      "TEST_SN_1": "DFA1202509150001",
+      "F7030000093F4F0": "DFA1202509150001",
       "TEST_SN_2": "DFA1202509150002",
       "TEST_SN_3": "DFA1202509150003"
     },
@@ -34,7 +39,7 @@
     }
   },
   "testData": {
-    "enabled": true,
+    "enabled": false,
     "base64File": "logs/base64.txt"
   }
 }

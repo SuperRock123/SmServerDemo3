@@ -4,9 +4,9 @@ import cn.zmvision.ccm.smserver.entitys.SensorData;
 import cn.zmvision.ccm.smserver.server.SmServer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.toehold.utils.AppConfig;
 import org.toehold.utils.Log;
 import org.toehold.utils.RedisUtil;
-import org.toehold.utils.AppConfig;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,8 +29,8 @@ public class Main {
            ToeholdServerImp service = new ToeholdServerImp();
            SmServer smServer = new SmServer(service, AppConfig.tcp().port);
 
-           // 启动Redis队列消费者
-           new Thread(new RedisQueueConsumer(), "RedisQueueConsumer").start();
+           Thread consumerThread = new Thread(new RedisQueueConsumer(), "RedisQueueConsumer");
+           consumerThread.start();
 
            // 延迟插入测试数据（可通过配置开关）
            if (AppConfig.testData() != null && AppConfig.testData().enabled) {
@@ -68,7 +68,7 @@ public class Main {
                 SensorData sensorData = createTestSensorData(i);
                 String json = mapper.writeValueAsString(sensorData);
                 Log.debug("已创建测试数据: " + json);
-                RedisUtil.pushQueue("sensor_queue", json);
+                RedisUtil.pushQueue(AppConfig.redis().queue, json);
                 Log.debug("已插入测试数据到Redis队列: " + sensorData.getSn());
 
                 // 添加少量延迟以模拟实际数据到达间隔
